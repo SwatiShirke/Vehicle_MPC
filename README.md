@@ -75,21 +75,21 @@ Below are the results of the trajectory tracking experiments for three different
 ### Trajectory 1
 | 2D Trajectory Plot | Control Input Plot |
 |---------------------|--------------------|
-| ![Trajectory 1 Plot](results/trajectory1_plot.jpg) | ![Trajectory 1 Control Input](results/trajectory1_control.jpg) |
+| ![Trajectory 1 Plot](results/Sine_traj.jpeg) | ![Trajectory 1 Control Input](results/sine_u.jpeg) |
 
 ---
 
 ### Trajectory 2
 | 2D Trajectory Plot | Control Input Plot |
 |---------------------|--------------------|
-| ![Trajectory 2 Plot](results/trajectory2_plot.jpg) | ![Trajectory 2 Control Input](results/trajectory2_control.jpg) |
+| ![Trajectory 2 Plot](results/s_track_traj.jpeg) | ![Trajectory 2 Control Input](results/s_track_u.jpeg) |
 
 ---
 
 ### Trajectory 3
 | 2D Trajectory Plot | Control Input Plot |
 |---------------------|--------------------|
-| ![Trajectory 3 Plot](results/trajectory3_plot.jpg) | ![Trajectory 3 Control Input](results/trajectory3_control.jpg) |
+| ![Trajectory 3 Plot](results/track2_traj.jpeg) | ![Trajectory 3 Control Input](results/track2_u.jpeg) |
 
 ---
 
