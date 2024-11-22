@@ -73,7 +73,9 @@ Below are some sample results from the simulation:
 ### **2D Trajectory Plot**
 Comparison of the vehicle's path with the reference trajectory.
 
-![2D Trajectory Plot](results/2d_trajectory_plot.jpg)
+![2D Trajectory Plot](results/Sine_traj.jpeg)
+![Control Inputs](results/sine_u.jpeg)
+
 
 ### **Control Inputs**
 Control inputs (steering angle and velocity) for three different trajectories.
