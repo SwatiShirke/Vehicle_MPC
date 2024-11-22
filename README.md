@@ -68,25 +68,33 @@ pip install numpy matplotlib casadi
 
 ## Results
 
-Below are some sample results from the simulation:
+Below are the results of the trajectory tracking experiments for three different reference trajectories. Each row represents a trajectory, with the 2D trajectory plot on the left and the corresponding control input plot on the right.
 
-### **2D Trajectory Plot**
-Comparison of the vehicle's path with the reference trajectory.
+---
 
-![2D Trajectory Plot](results/Sine_traj.jpeg)
-![Control Inputs](results/sine_u.jpeg)
+### Trajectory 1
+| 2D Trajectory Plot | Control Input Plot |
+|---------------------|--------------------|
+| ![Trajectory 1 Plot](results/trajectory1_plot.jpg) | ![Trajectory 1 Control Input](results/trajectory1_control.jpg) |
 
+---
 
-### **Control Inputs**
-Control inputs (steering angle and velocity) for three different trajectories.
+### Trajectory 2
+| 2D Trajectory Plot | Control Input Plot |
+|---------------------|--------------------|
+| ![Trajectory 2 Plot](results/trajectory2_plot.jpg) | ![Trajectory 2 Control Input](results/trajectory2_control.jpg) |
 
-![Control Inputs](results/control_inputs.jpg)
+---
 
-### **Additional Plots**
-The repository includes plots for:
-- Lateral error
-- Heading error
-- Speed tracking
+### Trajectory 3
+| 2D Trajectory Plot | Control Input Plot |
+|---------------------|--------------------|
+| ![Trajectory 3 Plot](results/trajectory3_plot.jpg) | ![Trajectory 3 Control Input](results/trajectory3_control.jpg) |
+
+---
+
+Each plot shows the performance of the Model Predictive Controller (MPC) in tracking the desired path, while the control input plots illustrate the steering and velocity inputs used to achieve the trajectory tracking.
+
 
 ---
 
