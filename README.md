@@ -16,9 +16,9 @@ This repository implements trajectory tracking for an Ackerman steering system u
 ## Overview
 
 The project demonstrates:
-- Designing an MPC controller for an Ackerman steering model.
+- Designing an OCP problem for MPC controller for an Ackerman steering model.
 - Using the Acados library for efficient optimization.
-- Testing the controller on multiple trajectories (e.g., straight, circular, and sinusoidal paths).
+- Testing the controller on multiple trajectories (e.g., straight, sinusoidal paths).
 
 ---
 
