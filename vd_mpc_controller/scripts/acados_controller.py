@@ -18,9 +18,11 @@ def cal_state_cost(state_vec, ref_vec, weights):
     return cost  
 
 
-def cal_input_cost(input_vec, ref_vec, weights):
-    cost = ca.dot((ref_vec - input_vec)**2, weights)   
-    return cost
+def cal_input_cost(input_vec, ref_vec, weights, prev_in):
+    cost = ca.dot((ref_vec - input_vec)**2, weights)  
+    rate_weight = ca.vertcat(0, 5000, 5000) 
+    rate_cost = ca.dot((prev_in[1:3] - input_vec[1:3])**2, rate_weight[1:3])
+    return cost + rate_cost
 
 # x, y, qw, qx,qy,qz, v, acc, del1, del2
 def calculate_quat_cost(current_yaw, ref_yaw, weight):
@@ -95,10 +97,10 @@ def acados_controller(N, Tf, lf, lr):
     unscale = 1
     #cost matricesq
     # x, y, yaw, pitch, roll, vel
-    Q_mat = unscale * ca.vertcat(100e1, 100e1,   1000e1, 100e1)
+    Q_mat = unscale * ca.vertcat(10e1, 10e1,   100e1, 10e1)
     R_mat = unscale * ca.vertcat( 1e-8, 1e-8, 1e-8)
-    Q_emat =  unscale * ca.vertcat(1000e1, 1000e1,   10000e1,1000e1) 
-    
+    Q_emat =  unscale * ca.vertcat(100e1, 100e1,   1000e1,100e1) 
+    prev_in = ca.vertcat(0,0,0)
 
 
     x_array = model.x
@@ -108,7 +110,8 @@ def acados_controller(N, Tf, lf, lr):
 
     state_error = cal_state_cost(x_array, ref_array, Q_mat)
     quat_error = calculate_quat_cost(x_array[2],ref_array[2], Q_mat[2] )
-    input_error = cal_input_cost(u_aaray, ref_array[4:7], R_mat)     
+    input_error = cal_input_cost(u_aaray, ref_array[4:7], R_mat, prev_in)  
+    prev_in =  u_aaray  
     ocp.cost.cost_type = 'EXTERNAL'
     ocp.model.cost_expr_ext_cost = state_error + quat_error + input_error 
     ocp.model.cost_expr_ext_cost_0 = state_error + quat_error + input_error     

@@ -118,7 +118,7 @@ class CarlaRosPublisher(Node):
             pose_stamped.pose.orientation.x = yaw#% 2 *math.pi
             pose_stamped.pose.orientation.y = 0.0
             pose_stamped.pose.orientation.z = 0.0
-            pose_stamped.pose.orientation.w = 5.0  # self.vehicle.get_speed_limit()
+            pose_stamped.pose.orientation.w = 10.0  # self.vehicle.get_speed_limit()
 
             pose_stamped.pose
             print("wavepoint :", wp.transform.location.x, " " ,wp.transform.location.y," ", wp.transform.rotation.yaw)         
