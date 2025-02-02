@@ -176,7 +176,7 @@ def acados_controller(N, Tf, lf, lr):
 
 if __name__ == "__main__":
     N = 10
-    Tf = 0.5
+    Tf = 0.2
     lf = 2.56/2
     lr = 2.56/2
     #L =  2.5654

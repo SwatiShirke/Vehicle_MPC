@@ -14,7 +14,7 @@ class CarlaRosPublisher(Node):
         self.client = carla.Client('localhost', 2000)
         self.client.set_timeout(10.0)
         self.world = self.client.get_world()
-        self.T_pred = 0.05
+        self.T_pred = 0.02
         self.N = 10
         # Retrieve the vehicle using role name
         self.role_name = VEHICLE_ROLE_NAME
@@ -28,7 +28,7 @@ class CarlaRosPublisher(Node):
         self.waypoints_pub = self.create_publisher(Path, '/carla/ego_vehicle/waypoints', 10)
 
         # Timer for publishing at 20 Hz
-        self.create_timer(0.05, self.publish_data)  # 100 Hz
+        self.create_timer(0.02, self.publish_data)  # 100 Hz
 
     def publish_data(self):
         """Publish odometry and trajectory data."""
@@ -113,14 +113,13 @@ class CarlaRosPublisher(Node):
             yaw = math.radians(wp.transform.rotation.yaw)
             # pitch = math.radians(wp.transform.rotation.pitch)
             # roll = math.radians(wp.transform.rotation.roll)
-
             #x, y,z, w = self.euler_to_quaternion(roll, pitch, yaw)
 
             
             pose_stamped.pose.orientation.x = yaw#% 2 *math.pi
             pose_stamped.pose.orientation.y = 0.0
             pose_stamped.pose.orientation.z = 0.0
-            pose_stamped.pose.orientation.w = 25.0  # self.vehicle.get_speed_limit()
+            pose_stamped.pose.orientation.w = 15.0  # self.vehicle.get_speed_limit()
 
             pose_stamped.pose
             print("wavepoint :", wp.transform.location.x, " " ,wp.transform.location.y," ", wp.transform.rotation.yaw)         

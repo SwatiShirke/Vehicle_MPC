@@ -434,7 +434,7 @@ void ackerman_model_acados_setup_nlp_in(ackerman_model_solver_capsule* capsule, 
         ackerman_model_acados_update_time_steps(capsule, N, new_time_steps);
     }
     else
-    {double time_step = 0.05;
+    {double time_step = 0.02;
         for (int i = 0; i < N; i++)
         {
             ocp_nlp_in_set(nlp_config, nlp_dims, nlp_in, i, "Ts", &time_step);
