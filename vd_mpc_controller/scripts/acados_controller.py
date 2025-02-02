@@ -9,41 +9,27 @@ from scipy.spatial.transform import Rotation as R
 # import ipdb
 # import sys
 
-def cal_state_cost(state_vec, ref_vec, weights):
+def cal_state_cost(state_vec, ref_vec, weights, prev_state, state_rate_weight):
     pos_cost = ca.dot((ref_vec[0:2] - state_vec[0:2])**2, weights[0:2])
     vel_cost = (ref_vec[3] - state_vec[3])**2 * weights[3]
     #yaw_cost =  ( 1 - np.cos(ref_vec[2] - state_vec[2]))**2  * weights[2]
     cost = (pos_cost + vel_cost )
+    state_change_cost = ca.fabs(prev_state[2] - state_vec[2]) < 0.035
     #ipdb.set_trace()    
-    return cost  
+    return cost 
 
 
-def cal_input_cost(input_vec, ref_vec, weights, prev_in):
-    cost = ca.dot((ref_vec - input_vec)**2, weights)  
-    rate_weight = ca.vertcat(0, 5000, 5000) 
-    rate_cost = ca.dot((prev_in[1:3] - input_vec[1:3])**2, rate_weight[1:3])
-    return cost + rate_cost
+
+def cal_input_cost(input_vec, ref_vec, weights, prev_in, control_rate_weight):
+    cost = ca.dot((ref_vec - input_vec)**2, weights)      
+    rate_cost = ca.dot((prev_in[1:3] - input_vec[1:3])**2, control_rate_weight[1:3])
+    return cost 
 
 # x, y, qw, qx,qy,qz, v, acc, del1, del2
 def calculate_quat_cost(current_yaw, ref_yaw, weight):
     current_quat = ca.vertcat(ca.cos(current_yaw/2), 0, 0, ca.sin(current_yaw/2))
     ref_quat = ca.vertcat(ca.cos(ref_yaw/2), 0, 0, ca.sin(ref_yaw/2))
-    # qk = current_quat
-    # qd = ref_quat
-    # # Convert to rotation objects
-    # q_k_rot = R.from_quat(qk)
-    # q_d_rot = R.from_quat(qd)
-
-    # # Compute quaternion difference (q_d * q_k^-1)
-    # q_diff = q_d_rot * q_k_rot.inv()
-
-    # # Extract quaternion components
-    # q_diff_quat = q_diff.as_quat()  # [x, y, z, w]
-
-    # Extract rotation angle (theta = 2 * arccos(q_w))
-    #angle = 2 * np.arccos(np.clip(q_diff_quat[-1], -1.0, 1.0))  # Clip to prevent numerical errors 
-    # 
-    # 
+    
     weights = ca.vertcat(weight, 0,0 )
     qk = ref_quat
     qd = current_quat 
@@ -62,7 +48,17 @@ def calculate_quat_cost(current_yaw, ref_yaw, weight):
     
    
     cost = ca.transpose(q_att) @ ca.diag(weights) @ q_att
+    
     return cost
+
+
+def get_constraints(x_array, prev_state, yaw_rate, u_aaray, prev_in, steer_rate):
+    h_list = []    
+    #yaw_const = ca.fabs(x_array[2] - prev_state[2])
+    steer1_constraint = ca.fabs(u_aaray[1] - prev_in[1])
+    steer2_constraint = ca.fabs(u_aaray[2] - prev_in[2])
+    h_list = ca.vertcat( steer1_constraint, steer2_constraint)
+    return h_list
 
 def acados_controller(N, Tf, lf, lr):
     #model configs param
@@ -80,6 +76,8 @@ def acados_controller(N, Tf, lf, lr):
     max_str_angle_out = 0.7
     vel_min = 0
     vel_max = 85
+    steer_rate = 0.1
+    yaw_rate = 0.1
 
     model = ackerman_model(lf, lr)
     ocp.model = model
@@ -100,28 +98,33 @@ def acados_controller(N, Tf, lf, lr):
     Q_mat = unscale * ca.vertcat(10e1, 10e1,   100e1, 10e1)
     R_mat = unscale * ca.vertcat( 1e-8, 1e-8, 1e-8)
     Q_emat =  unscale * ca.vertcat(100e1, 100e1,   1000e1,100e1) 
+    control_rate_weight = ca.vertcat(0, 5000, 5000)
+    state_rate_weight = ca.vertcat(0, 0, 100, 0)
     prev_in = ca.vertcat(0,0,0)
-
+    prev_state = ca.vertcat(0,0,0,0)
 
     x_array = model.x
     u_aaray = model.u
     ref_array = model.p  # x, y, qw, qx,qy,qz, v, acc, del1, del2
 
 
-    state_error = cal_state_cost(x_array, ref_array, Q_mat)
+    state_error = cal_state_cost(x_array, ref_array, Q_mat, prev_state, state_rate_weight )
     quat_error = calculate_quat_cost(x_array[2],ref_array[2], Q_mat[2] )
-    input_error = cal_input_cost(u_aaray, ref_array[4:7], R_mat, prev_in)  
-    prev_in =  u_aaray  
+    input_error = cal_input_cost(u_aaray, ref_array[4:7], R_mat, prev_in, control_rate_weight)  
+    
+
     ocp.cost.cost_type = 'EXTERNAL'
     ocp.model.cost_expr_ext_cost = state_error + quat_error + input_error 
     ocp.model.cost_expr_ext_cost_0 = state_error + quat_error + input_error     
     
     
 
-    state_error = cal_state_cost(x_array, ref_array, Q_emat)
+    state_error = cal_state_cost(x_array, ref_array, Q_emat, prev_state, state_rate_weight)
     quat_error = calculate_quat_cost(x_array[2],ref_array[2], Q_mat[2]  )
     ocp.cost.cost_type_e = 'EXTERNAL'
     ocp.model.cost_expr_ext_cost_e = state_error + quat_error 
+
+    
     
     # set constraints
     #constraints on control input    
@@ -139,8 +142,18 @@ def acados_controller(N, Tf, lf, lr):
     # ocp.constraints.lbu = np.array([dthrottle_min, ddelta_min])
     # ocp.constraints.ubu = np.array([dthrottle_max, ddelta_max])
 
-    # set intial condition
-    #ocp.constraints.x0 = model.x0
+    # set inequlaity constraints
+    h_list = get_constraints(x_array, prev_state, yaw_rate, u_aaray, prev_in, steer_rate)
+    ocp.model.con_h_expr = h_list
+    ocp.dims.nh = h_list.shape[0]
+    ocp.constraints.lh = np.array([0,0]) #np.array([0,0,0])        # yaw rate, delta rate constraints
+    ocp.constraints.uh =   np.array([0.005, 0.005])#np.array([yaw_rate, steer_rate,state_error])             # Upper bound 
+    ocp.model.lh = np.array([0,0]) # np.array([0,0,0])            # lower bound
+    ocp.model.uh = np.array([0.005, 0.005]) #np.array([yaw_rate, steer_rate,state_error])  
+
+    ##update last states and input for rate control
+    prev_in =  u_aaray 
+    prev_state = x_array
 
     # set QP solver and integration
     ocp.solver_options.tf = Tf
