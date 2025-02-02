@@ -4,12 +4,12 @@ from rclpy.node import Node
 from nav_msgs.msg import Odometry, Path
 from geometry_msgs.msg import PoseStamped, Quaternion
 import math
-
+from rclpy.clock import Clock
 
 class CarlaRosPublisher(Node):
     def __init__(self, VEHICLE_ROLE_NAME):
         super().__init__('carla_ros_publisher')
-
+        self.clock = Clock()
         # Connect to CARLA
         self.client = carla.Client('localhost', 2000)
         self.client.set_timeout(10.0)
@@ -56,7 +56,8 @@ class CarlaRosPublisher(Node):
         vehicle_velocity = self.vehicle.get_velocity()
 
         odom_msg = Odometry()
-        odom_msg.header.stamp = self.get_clock().now().to_msg()
+        odom_msg.header.stamp = self.clock.now().to_msg()
+        #odom_msg.header.stamp = self.get_clock().now().to_msg()
         odom_msg.header.frame_id = 'map'
 
         # Position
@@ -97,13 +98,14 @@ class CarlaRosPublisher(Node):
         waypoints = self.get_time_spanned_waypoints()
         #Create PoseArray for waypoints
         path_msg = Path()
-        path_msg.header.stamp = self.get_clock().now().to_msg()
+        path_msg.header.stamp = self.clock.now().to_msg()
         path_msg.header.frame_id = 'map'
 
         way_point_list = []
         for wp in waypoints:
             pose_stamped = PoseStamped()
             pose_stamped.header = path_msg.header
+            path_msg.header.stamp = self.clock.now().to_msg()
             pose_stamped.pose.position.x = wp.transform.location.x
             pose_stamped.pose.position.y = wp.transform.location.y
             pose_stamped.pose.position.z = wp.transform.location.z
@@ -118,7 +120,7 @@ class CarlaRosPublisher(Node):
             pose_stamped.pose.orientation.x = yaw#% 2 *math.pi
             pose_stamped.pose.orientation.y = 0.0
             pose_stamped.pose.orientation.z = 0.0
-            pose_stamped.pose.orientation.w = 5.0  # self.vehicle.get_speed_limit()
+            pose_stamped.pose.orientation.w = 10.0  # self.vehicle.get_speed_limit()
 
             pose_stamped.pose
             print("wavepoint :", wp.transform.location.x, " " ,wp.transform.location.y," ", wp.transform.rotation.yaw)         

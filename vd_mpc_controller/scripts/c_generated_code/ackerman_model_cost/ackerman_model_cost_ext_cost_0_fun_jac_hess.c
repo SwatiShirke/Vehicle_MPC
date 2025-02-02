@@ -67,7 +67,7 @@ static const casadi_int casadi_s6[10] = {0, 7, 0, 0, 0, 0, 0, 0, 0, 0};
 /* ackerman_model_cost_ext_cost_0_fun_jac_hess:(i0[4],i1[3],i2[],i3[7])->(o0,o1[7],o2[7x7,6nz],o3[],o4[0x7]) */
 static int casadi_f0(const casadi_real** arg, casadi_real** res, casadi_int* iw, casadi_real* w, int mem) {
   casadi_real a0, a1, a10, a2, a3, a4, a5, a6, a7, a8, a9;
-  a0=1000.;
+  a0=100.;
   a1=arg[3]? arg[3][0] : 0;
   a2=arg[0]? arg[0][0] : 0;
   a1=(a1-a2);
@@ -135,7 +135,7 @@ static int casadi_f0(const casadi_real** arg, casadi_real** res, casadi_int* iw,
   if (res[2]!=0) res[2][0]=a0;
   if (res[2]!=0) res[2][1]=a0;
   if (res[2]!=0) res[2][2]=a0;
-  a0=2000.;
+  a0=200.;
   if (res[2]!=0) res[2][3]=a0;
   if (res[2]!=0) res[2][4]=a0;
   if (res[2]!=0) res[2][5]=a0;

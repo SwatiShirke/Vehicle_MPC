@@ -23,7 +23,8 @@ setup(
     entry_points={
         'console_scripts': [
             "sim_node = vd_sim.sim_node:main",
-            "carla_pub_node = vd_sim.carla_pub_node:main"
+            "carla_pub_node = vd_sim.carla_pub_node:main",
+            "ros_bag_node = vd_sim.data_saver_node:main"
         ],
     },
 )
