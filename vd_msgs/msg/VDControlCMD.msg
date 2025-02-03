@@ -1,2 +1,3 @@
-float64 velocity
-float64 steering_angle
+std_msgs/Header header
+float64 accel
+float64 yaw_rate 

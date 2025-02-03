@@ -9,20 +9,19 @@ from scipy.spatial.transform import Rotation as R
 # import ipdb
 # import sys
 
-def cal_state_cost(state_vec, ref_vec, weights, prev_state, state_rate_weight):
+def cal_state_cost(state_vec, ref_vec, weights):
     pos_cost = ca.dot((ref_vec[0:2] - state_vec[0:2])**2, weights[0:2])
     vel_cost = (ref_vec[3] - state_vec[3])**2 * weights[3]
-    #yaw_cost =  ( 1 - np.cos(ref_vec[2] - state_vec[2]))**2  * weights[2]
+    # #yaw_cost =  ( 1 - np.cos(ref_vec[2] - state_vec[2]))**2  * weights[2]
     cost = (pos_cost + vel_cost )
-    state_change_cost = ca.fabs(prev_state[2] - state_vec[2]) < 0.035
-    #ipdb.set_trace()    
+       
     return cost 
 
 
 
-def cal_input_cost(input_vec, ref_vec, weights, prev_in, control_rate_weight):
+def cal_input_cost(input_vec, ref_vec, weights):
     cost = ca.dot((ref_vec - input_vec)**2, weights)      
-    rate_cost = ca.dot((prev_in[1:3] - input_vec[1:3])**2, control_rate_weight[1:3])
+    #rate_cost = ca.dot((prev_in[1:3] - input_vec[1:3])**2, control_rate_weight[1:3])
     return cost 
 
 # x, y, qw, qx,qy,qz, v, acc, del1, del2
@@ -52,15 +51,14 @@ def calculate_quat_cost(current_yaw, ref_yaw, weight):
     return cost
 
 
-def get_constraints(x_array, prev_state, yaw_rate, u_aaray, prev_in, steer_rate):
+def get_constraints(u_aaray, prev_in):
     h_list = []    
     #yaw_const = ca.fabs(x_array[2] - prev_state[2])
-    steer1_constraint = ca.fabs(u_aaray[1] - prev_in[1])
-    steer2_constraint = ca.fabs(u_aaray[2] - prev_in[2])
-    h_list = ca.vertcat( steer1_constraint, steer2_constraint)
+    yaw_rate_change_const = ca.fabs(u_aaray[1] - prev_in[1])    
+    h_list = ca.vertcat( yaw_rate_change_const)
     return h_list
 
-def acados_controller(N, Tf, lf, lr):
+def acados_controller(N, Tf, lf, lr, mass, Cr ):
     #model configs param
     # N = params.N
     # Tf = params.Tf
@@ -69,17 +67,15 @@ def acados_controller(N, Tf, lf, lr):
     ocp = AcadosOcp()
     # set model    
     min_accel = -1
-    max_accel = +1
-    min_str_angle_in= -0.7
-    max_str_angle_in = 0.7
-    min_str_angle_out = -0.7
-    max_str_angle_out = 0.7
+    max_accel = +1    
     vel_min = 0
     vel_max = 85
-    steer_rate = 0.1
-    yaw_rate = 0.1
+    yaw_rate_change_rate = 0.01
+    min_yaw_rate = -0.01
+    max_yaw_rate = 0.01
 
-    model = ackerman_model(lf, lr)
+
+    model = ackerman_model(lf, lr, mass, Cr )
     ocp.model = model
     
     ocp.dims.np = ocp.model.p.size()[0]
@@ -96,10 +92,8 @@ def acados_controller(N, Tf, lf, lr):
     #cost matricesq
     # x, y, yaw, pitch, roll, vel
     Q_mat = unscale * ca.vertcat(10e1, 10e1,   100e1, 10e1)
-    R_mat = unscale * ca.vertcat( 1e-8, 1e-8, 1e-8)
-    Q_emat =  unscale * ca.vertcat(100e1, 100e1,   1000e1,100e1) 
-    control_rate_weight = ca.vertcat(0, 5000, 5000)
-    state_rate_weight = ca.vertcat(0, 0, 100, 0)
+    R_mat = unscale * ca.vertcat( 1e-8, 1e-8)
+    Q_emat =  unscale * ca.vertcat(100e1, 100e1,   1000e1,100e1)     
     prev_in = ca.vertcat(0,0,0)
     prev_state = ca.vertcat(0,0,0,0)
 
@@ -108,9 +102,9 @@ def acados_controller(N, Tf, lf, lr):
     ref_array = model.p  # x, y, qw, qx,qy,qz, v, acc, del1, del2
 
 
-    state_error = cal_state_cost(x_array, ref_array, Q_mat, prev_state, state_rate_weight )
+    state_error = cal_state_cost(x_array, ref_array, Q_mat )
     quat_error = calculate_quat_cost(x_array[2],ref_array[2], Q_mat[2] )
-    input_error = cal_input_cost(u_aaray, ref_array[4:7], R_mat, prev_in, control_rate_weight)  
+    input_error = cal_input_cost(u_aaray, ref_array[4:6], R_mat)  
     
 
     ocp.cost.cost_type = 'EXTERNAL'
@@ -119,7 +113,7 @@ def acados_controller(N, Tf, lf, lr):
     
     
 
-    state_error = cal_state_cost(x_array, ref_array, Q_emat, prev_state, state_rate_weight)
+    state_error = cal_state_cost(x_array, ref_array, Q_emat)
     quat_error = calculate_quat_cost(x_array[2],ref_array[2], Q_mat[2]  )
     ocp.cost.cost_type_e = 'EXTERNAL'
     ocp.model.cost_expr_ext_cost_e = state_error + quat_error 
@@ -128,9 +122,9 @@ def acados_controller(N, Tf, lf, lr):
     
     # set constraints
     #constraints on control input    
-    ocp.constraints.lbu = np.array([min_accel, min_str_angle_in, min_str_angle_out])
-    ocp.constraints.ubu = np.array([max_accel, max_str_angle_in, max_str_angle_out])
-    ocp.constraints.idxbu = np.array([0, 1, 2])
+    ocp.constraints.lbu = np.array([min_accel, min_yaw_rate])
+    ocp.constraints.ubu = np.array([max_accel, max_yaw_rate])
+    ocp.constraints.idxbu = np.array([0,1])
 
     #initial state contraints
     ocp.constraints.x0 = np.array([0, 0, 0, 0] )
@@ -139,17 +133,15 @@ def acados_controller(N, Tf, lf, lr):
     ocp.constraints.lbx = np.array([-2* np.pi ,vel_min])
     ocp.constraints.ubx = np.array([2 * np.pi, vel_max])
     ocp.constraints.idxbx = np.array([2,3] )
-    # ocp.constraints.lbu = np.array([dthrottle_min, ddelta_min])
-    # ocp.constraints.ubu = np.array([dthrottle_max, ddelta_max])
-
-    # set inequlaity constraints
-    h_list = get_constraints(x_array, prev_state, yaw_rate, u_aaray, prev_in, steer_rate)
+    
+    # # set inequlaity constraints
+    h_list = get_constraints(u_aaray, prev_in)
     ocp.model.con_h_expr = h_list
     ocp.dims.nh = h_list.shape[0]
-    ocp.constraints.lh = np.array([0,0]) #np.array([0,0,0])        # yaw rate, delta rate constraints
-    ocp.constraints.uh =   np.array([0.005, 0.005])#np.array([yaw_rate, steer_rate,state_error])             # Upper bound 
-    ocp.model.lh = np.array([0,0]) # np.array([0,0,0])            # lower bound
-    ocp.model.uh = np.array([0.005, 0.005]) #np.array([yaw_rate, steer_rate,state_error])  
+    ocp.constraints.lh = np.array([0]) #np.array([0,0,0])        # yaw rate, delta rate constraints
+    ocp.constraints.uh =   np.array([yaw_rate_change_rate])#np.array([yaw_rate, steer_rate,state_error])             # Upper bound 
+    ocp.model.lh = np.array([0]) # np.array([0,0,0])            # lower bound
+    ocp.model.uh = np.array([yaw_rate_change_rate]) #np.array([yaw_rate, steer_rate,state_error])  
 
     ##update last states and input for rate control
     prev_in =  u_aaray 
@@ -165,7 +157,6 @@ def acados_controller(N, Tf, lf, lr):
     ocp.solver_options.sim_method_num_stages = 4
     ocp.solver_options.sim_method_num_steps = 3
 
-
     # create solver
     acados_solver = AcadosOcpSolver(ocp, json_file="acados_ocp.json")
     acados_integrator = AcadosSimSolver(ocp, json_file = "acados_ocp.json")
@@ -179,5 +170,7 @@ if __name__ == "__main__":
     Tf = 0.2
     lf = 2.56/2
     lr = 2.56/2
+    mass = 2000
+    Cr =  40000  #N/Rad   #coeff lateral stiffess 
     #L =  2.5654
-    model, acados_solver, acados_integrator = acados_controller(N, Tf, lf, lr )
+    model, acados_solver, acados_integrator = acados_controller(N, Tf, lf, lr, mass, Cr )

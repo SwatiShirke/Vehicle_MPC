@@ -62,20 +62,17 @@ casadi_real casadi_fabs(casadi_real x) {
 }
 
 static const casadi_int casadi_s0[8] = {4, 1, 0, 4, 0, 1, 2, 3};
-static const casadi_int casadi_s1[7] = {3, 1, 0, 3, 0, 1, 2};
+static const casadi_int casadi_s1[6] = {2, 1, 0, 2, 0, 1};
 static const casadi_int casadi_s2[3] = {0, 0, 0};
-static const casadi_int casadi_s3[11] = {7, 1, 0, 7, 0, 1, 2, 3, 4, 5, 6};
-static const casadi_int casadi_s4[6] = {2, 1, 0, 2, 0, 1};
+static const casadi_int casadi_s3[10] = {6, 1, 0, 6, 0, 1, 2, 3, 4, 5};
+static const casadi_int casadi_s4[5] = {1, 1, 0, 1, 0};
 
-/* ackerman_model_constr_h_fun:(i0[4],i1[3],i2[],i3[7])->(o0[2]) */
+/* ackerman_model_constr_h_fun:(i0[4],i1[2],i2[],i3[6])->(o0) */
 static int casadi_f0(const casadi_real** arg, casadi_real** res, casadi_int* iw, casadi_real* w, int mem) {
   casadi_real a0;
   a0=arg[1]? arg[1][1] : 0;
   a0=casadi_fabs(a0);
   if (res[0]!=0) res[0][0]=a0;
-  a0=arg[1]? arg[1][2] : 0;
-  a0=casadi_fabs(a0);
-  if (res[0]!=0) res[0][1]=a0;
   return 0;
 }
 

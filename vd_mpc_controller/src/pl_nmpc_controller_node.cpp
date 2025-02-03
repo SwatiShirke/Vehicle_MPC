@@ -59,7 +59,7 @@ namespace nmpc_control_nodelet
     //set qos
     auto qos_profile_ = this->create_custom_qos();
     //punlsihers
-    pub_control_cmd_ = this->create_publisher<carla_msgs::msg::CarlaEgoVehicleControl>("/carla/ego_vehicle/vehicle_control_cmd",qos_profile_);
+    pub_control_cmd_ = this->create_publisher<vd_msg::msg::VDControlCMD>("/mpc/control_cmd",qos_profile_);
     pub_ref_traj_ = this->create_publisher<nav_msgs::msg::Path>("reference_path", 1);
     pub_pred_traj_ = this->create_publisher<nav_msgs::msg::Path>("predicted_path", 1);   
 
@@ -95,7 +95,7 @@ namespace nmpc_control_nodelet
     void referenceCallback(const nav_msgs::msg::Path::SharedPtr reference_msg);
     void odomCallback(const nav_msgs::msg::Odometry::SharedPtr odom_msg);
     rclcpp::QoS create_custom_qos();
-    rclcpp::Publisher<carla_msgs::msg::CarlaEgoVehicleControl>::SharedPtr pub_control_cmd_;
+    rclcpp::Publisher<vd_msgs::msg::VDControlCMD>::SharedPtr pub_control_cmd_;
     rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr pub_ref_traj_;
     rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr pub_pred_traj_;       
     
@@ -103,6 +103,8 @@ namespace nmpc_control_nodelet
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr sub_odometry_;
     //rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr sub_imu_;
     
+
+    //CarlaEgoVehicleControl, 
  };
 
 
@@ -225,21 +227,15 @@ void NMPCControlNodelet::odomCallback(const nav_msgs::msg::Odometry::SharedPtr o
 void NMPCControlNodelet::publishControl()
 {
   Eigen::Matrix<double, kInputSize, 1> pred_input = controller_.getPredictedInput();
-  carla_msgs::msg::CarlaEgoVehicleControl vd_control_msg;
+  vd_msgs::msg::VDControlCMD vd_control_msg;
   vd_control_msg.header.stamp = clock_.now();
+
   //vd_control_ms.header.frame_id = frame_id_;
-  if (pred_input(0) >= 0)
-  {
-    vd_control_msg.throttle = pred_input(0);
-    vd_control_msg.steer = (pred_input(1) + pred_input(2))/ (2 * 0.7) ; //40 degree steering angle 
-    vd_control_msg.brake = 0;
-  }
-  else
-  {
-    vd_control_msg.throttle = 0;
-    vd_control_msg.steer = (pred_input(1) + pred_input(2))/(2 * 0.7);
-    vd_control_msg.brake = -1 * pred_input(0);
-  }
+  
+  
+  vd_control_msg.accel = pred_input(0);
+  vd_control_msg.yaw_rate = pred_input(1)  //40 degree steering angle 
+    
   std::cout<< "pred_input" << pred_input << '\n';
   pub_control_cmd_->publish(vd_control_msg);
 

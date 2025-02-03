@@ -55,14 +55,14 @@ extern "C" {
 casadi_real casadi_sq(casadi_real x) { return x*x;}
 
 static const casadi_int casadi_s0[8] = {4, 1, 0, 4, 0, 1, 2, 3};
-static const casadi_int casadi_s1[7] = {3, 1, 0, 3, 0, 1, 2};
+static const casadi_int casadi_s1[6] = {2, 1, 0, 2, 0, 1};
 static const casadi_int casadi_s2[3] = {0, 0, 0};
-static const casadi_int casadi_s3[11] = {7, 1, 0, 7, 0, 1, 2, 3, 4, 5, 6};
+static const casadi_int casadi_s3[10] = {6, 1, 0, 6, 0, 1, 2, 3, 4, 5};
 static const casadi_int casadi_s4[5] = {1, 1, 0, 1, 0};
 
-/* ackerman_model_cost_ext_cost_0_fun_jac:(i0[4],i1[3],i2[],i3[7])->(o0,o1[7]) */
+/* ackerman_model_cost_ext_cost_0_fun_jac:(i0[4],i1[2],i2[],i3[6])->(o0,o1[6]) */
 static int casadi_f0(const casadi_real** arg, casadi_real** res, casadi_int* iw, casadi_real* w, int mem) {
-  casadi_real a0, a1, a10, a2, a3, a4, a5, a6, a7, a8, a9;
+  casadi_real a0, a1, a2, a3, a4, a5, a6, a7, a8, a9;
   a0=100.;
   a1=arg[3]? arg[3][0] : 0;
   a2=arg[0]? arg[0][0] : 0;
@@ -93,12 +93,6 @@ static int casadi_f0(const casadi_real** arg, casadi_real** res, casadi_int* iw,
   a9=casadi_sq(a8);
   a9=(a5*a9);
   a7=(a7+a9);
-  a9=arg[3]? arg[3][6] : 0;
-  a10=arg[1]? arg[1][2] : 0;
-  a9=(a9-a10);
-  a10=casadi_sq(a9);
-  a10=(a5*a10);
-  a7=(a7+a10);
   a2=(a2+a7);
   if (res[0]!=0) res[0][0]=a2;
   a6=(a6+a6);
@@ -106,27 +100,23 @@ static int casadi_f0(const casadi_real** arg, casadi_real** res, casadi_int* iw,
   a6=(-a6);
   if (res[1]!=0) res[1][0]=a6;
   a8=(a8+a8);
-  a8=(a5*a8);
-  a8=(-a8);
-  if (res[1]!=0) res[1][1]=a8;
-  a9=(a9+a9);
-  a5=(a5*a9);
+  a5=(a5*a8);
   a5=(-a5);
-  if (res[1]!=0) res[1][2]=a5;
+  if (res[1]!=0) res[1][1]=a5;
   a1=(a1+a1);
   a1=(a0*a1);
   a1=(-a1);
-  if (res[1]!=0) res[1][3]=a1;
+  if (res[1]!=0) res[1][2]=a1;
   a3=(a3+a3);
   a3=(a0*a3);
   a3=(-a3);
-  if (res[1]!=0) res[1][4]=a3;
+  if (res[1]!=0) res[1][3]=a3;
   a3=0.;
-  if (res[1]!=0) res[1][5]=a3;
+  if (res[1]!=0) res[1][4]=a3;
   a4=(a4+a4);
   a0=(a0*a4);
   a0=(-a0);
-  if (res[1]!=0) res[1][6]=a0;
+  if (res[1]!=0) res[1][5]=a0;
   return 0;
 }
 

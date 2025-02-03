@@ -97,7 +97,6 @@ int main()
     double u0[NU];
     u0[0] = 0.0;
     u0[1] = 0.0;
-    u0[2] = 0.0;
 
     // prepare evaluation
     int NTIMINGS = 1;

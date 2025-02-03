@@ -67,26 +67,21 @@ casadi_real casadi_fabs(casadi_real x) {
 casadi_real casadi_sign(casadi_real x) { return x<0 ? -1 : x>0 ? 1 : x;}
 
 static const casadi_int casadi_s0[8] = {4, 1, 0, 4, 0, 1, 2, 3};
-static const casadi_int casadi_s1[7] = {3, 1, 0, 3, 0, 1, 2};
+static const casadi_int casadi_s1[6] = {2, 1, 0, 2, 0, 1};
 static const casadi_int casadi_s2[3] = {0, 0, 0};
-static const casadi_int casadi_s3[11] = {7, 1, 0, 7, 0, 1, 2, 3, 4, 5, 6};
-static const casadi_int casadi_s4[6] = {2, 1, 0, 2, 0, 1};
-static const casadi_int casadi_s5[7] = {7, 2, 0, 1, 2, 1, 2};
-static const casadi_int casadi_s6[3] = {2, 0, 0};
+static const casadi_int casadi_s3[10] = {6, 1, 0, 6, 0, 1, 2, 3, 4, 5};
+static const casadi_int casadi_s4[5] = {1, 1, 0, 1, 0};
+static const casadi_int casadi_s5[5] = {6, 1, 0, 1, 1};
+static const casadi_int casadi_s6[3] = {1, 0, 0};
 
-/* ackerman_model_constr_h_fun_jac_uxt_zt:(i0[4],i1[3],i2[],i3[7])->(o0[2],o1[7x2,2nz],o2[2x0]) */
+/* ackerman_model_constr_h_fun_jac_uxt_zt:(i0[4],i1[2],i2[],i3[6])->(o0,o1[6x1,1nz],o2[1x0]) */
 static int casadi_f0(const casadi_real** arg, casadi_real** res, casadi_int* iw, casadi_real* w, int mem) {
-  casadi_real a0, a1, a2;
+  casadi_real a0, a1;
   a0=arg[1]? arg[1][1] : 0;
   a1=casadi_fabs(a0);
   if (res[0]!=0) res[0][0]=a1;
-  a1=arg[1]? arg[1][2] : 0;
-  a2=casadi_fabs(a1);
-  if (res[0]!=0) res[0][1]=a2;
   a0=casadi_sign(a0);
   if (res[1]!=0) res[1][0]=a0;
-  a1=casadi_sign(a1);
-  if (res[1]!=0) res[1][1]=a1;
   return 0;
 }
 

@@ -81,7 +81,6 @@ int main()
     double u0[NU];
     u0[0] = 0.0;
     u0[1] = 0.0;
-    u0[2] = 0.0;
     // set parameters
     double p[NP];
     p[0] = 0;
@@ -90,7 +89,6 @@ int main()
     p[3] = 0;
     p[4] = 0;
     p[5] = 0;
-    p[6] = 0;
 
     ackerman_model_acados_sim_update_params(capsule, p, NP);
   

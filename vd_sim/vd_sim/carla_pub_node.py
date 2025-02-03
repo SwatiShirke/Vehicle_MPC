@@ -111,11 +111,6 @@ class CarlaRosPublisher(Node):
             pose_stamped.pose.position.z = wp.transform.location.z
 
             yaw = math.radians(wp.transform.rotation.yaw)
-            # pitch = math.radians(wp.transform.rotation.pitch)
-            # roll = math.radians(wp.transform.rotation.roll)
-            #x, y,z, w = self.euler_to_quaternion(roll, pitch, yaw)
-
-            
             pose_stamped.pose.orientation.x = yaw#% 2 *math.pi
             pose_stamped.pose.orientation.y = 0.0
             pose_stamped.pose.orientation.z = 0.0

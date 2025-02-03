@@ -50,38 +50,33 @@ extern "C" {
 #endif
 
 static const casadi_int casadi_s0[8] = {4, 1, 0, 4, 0, 1, 2, 3};
-static const casadi_int casadi_s1[7] = {3, 1, 0, 3, 0, 1, 2};
-static const casadi_int casadi_s2[11] = {7, 1, 0, 7, 0, 1, 2, 3, 4, 5, 6};
+static const casadi_int casadi_s1[6] = {2, 1, 0, 2, 0, 1};
+static const casadi_int casadi_s2[10] = {6, 1, 0, 6, 0, 1, 2, 3, 4, 5};
 
-/* ackerman_model_expl_ode_fun:(i0[4],i1[3],i2[7])->(o0[4]) */
+/* ackerman_model_expl_ode_fun:(i0[4],i1[2],i2[6])->(o0[4]) */
 static int casadi_f0(const casadi_real** arg, casadi_real** res, casadi_int* iw, casadi_real* w, int mem) {
   casadi_real a0, a1, a2, a3, a4;
   a0=arg[0]? arg[0][3] : 0;
   a1=arg[0]? arg[0][2] : 0;
-  a2=5.0000000000000000e-01;
+  a2=2.5000000000000001e-02;
+  a2=(a2*a0);
   a3=arg[1]? arg[1][1] : 0;
-  a4=arg[1]? arg[1][2] : 0;
-  a3=(a3+a4);
-  a4=2.;
-  a3=(a3/a4);
-  a3=tan(a3);
   a2=(a2*a3);
-  a2=atan(a2);
-  a3=(a1+a2);
-  a3=cos(a3);
-  a3=(a0*a3);
-  if (res[0]!=0) res[0][0]=a3;
+  a4=1.2800000000000000e+00;
+  a4=(a4*a3);
+  a4=(a4/a0);
+  a2=(a2+a4);
+  a4=(a1+a2);
+  a4=cos(a4);
+  a4=(a0*a4);
+  if (res[0]!=0) res[0][0]=a4;
   a1=(a1+a2);
   a1=sin(a1);
-  a1=(a0*a1);
-  if (res[0]!=0) res[0][1]=a1;
-  a1=1.2800000000000000e+00;
-  a0=(a0/a1);
-  a2=sin(a2);
-  a0=(a0*a2);
-  if (res[0]!=0) res[0][2]=a0;
-  a0=arg[1]? arg[1][0] : 0;
-  if (res[0]!=0) res[0][3]=a0;
+  a0=(a0*a1);
+  if (res[0]!=0) res[0][1]=a0;
+  if (res[0]!=0) res[0][2]=a3;
+  a3=arg[1]? arg[1][0] : 0;
+  if (res[0]!=0) res[0][3]=a3;
   return 0;
 }
 

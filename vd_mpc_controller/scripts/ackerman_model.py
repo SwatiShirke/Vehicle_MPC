@@ -2,7 +2,7 @@ from casadi import *
 from acados_template import AcadosModel
 
 
-def ackerman_model(lf, lr):
+def ackerman_model(lf, lr, mass, Cr):
     model_name = "ackerman_model"
     model = AcadosModel()   
 
@@ -27,17 +27,19 @@ def ackerman_model(lf, lr):
 
     #input     
     accel = SX.sym("accel")
-    steer_angle_in = SX.sym("steer_angle_in")
-    steer_angle_out = SX.sym("steer_angle_out")
-    delta = (steer_angle_in + steer_angle_out)/2
-    u = vertcat(accel, steer_angle_in, steer_angle_out)
+    yaw_rate = SX.sym("yaw_rate")    
+    u = vertcat(accel,yaw_rate)
 
-    beta = arctan(lr / (lf + lr) * tan(delta))
+    #constants
+    K1 = mass * lf /((lf + lr) * Cr)
+    K2 = lr
+
+    beta = K1 * Vf * yaw_rate + K2 * yaw_rate /Vf 
     
     #system dynamics/kinematics
     f_expl =vertcat(Vf * np.cos(theta + beta),
                     Vf * np.sin(theta + beta),
-                    Vf /  lr * np.sin(beta),
+                    yaw_rate,
                     accel
                     )
 

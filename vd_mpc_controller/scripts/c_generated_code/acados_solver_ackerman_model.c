@@ -517,17 +517,14 @@ void ackerman_model_acados_setup_nlp_in(ackerman_model_solver_capsule* capsule, 
     
     idxbu[0] = 0;
     idxbu[1] = 1;
-    idxbu[2] = 2;
     double* lubu = calloc(2*NBU, sizeof(double));
     double* lbu = lubu;
     double* ubu = lubu + NBU;
     
     lbu[0] = -1;
     ubu[0] = 1;
-    lbu[1] = -0.7;
-    ubu[1] = 0.7;
-    lbu[2] = -0.7;
-    ubu[2] = 0.7;
+    lbu[1] = -0.01;
+    ubu[1] = 0.01;
 
     for (int i = 0; i < N; i++)
     {
@@ -578,8 +575,7 @@ void ackerman_model_acados_setup_nlp_in(ackerman_model_solver_capsule* capsule, 
     
 
     
-    uh[0] = 0.005;
-    uh[1] = 0.005;
+    uh[0] = 0.01;
 
     for (int i = 1; i < N; i++)
     {
@@ -887,7 +883,7 @@ int ackerman_model_acados_update_params(ackerman_model_solver_capsule* capsule, 
 {
     int solver_status = 0;
 
-    int casadi_np = 7;
+    int casadi_np = 6;
     if (casadi_np != np) {
         printf("acados_update_params: trying to set %i parameters for external functions."
             " External function has %i parameters. Exiting.\n", np, casadi_np);
