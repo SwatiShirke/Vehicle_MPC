@@ -14,7 +14,7 @@ class NMPCControl
 public:
   NMPCControl();
   void setState(const Eigen::Matrix<double, kStateSize, 1> &state);
-  void setOmega(const Eigen::Matrix<double, 3, 1> &omega);
+  void setOmega(const Eigen::Matrix<double, kInputSize, 1> &omega);
   void setReferenceStates(const Eigen::Matrix<double, kStateSize, kSamples> &reference_states);
   void setReferenceInputs(const Eigen::Matrix<double, kInputSize, kSamples> &reference_inputs);
   Eigen::Matrix<double, kStateSize, 1> getState() {return current_state_;}

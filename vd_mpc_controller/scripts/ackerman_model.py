@@ -33,12 +33,12 @@ def ackerman_model(lf, lr, mass, Cr):
     #constants
     K1 = mass * lf /((lf + lr) * Cr)
     K2 = lr
-
-    beta = K1 * Vf * yaw_rate + K2 * yaw_rate /Vf 
+    #beta = K1 * Vf * yaw_rate + K2 * yaw_rate /Vf 
+    beta = arcsin(lr / Vf * yaw_rate)
     
     #system dynamics/kinematics
-    f_expl =vertcat(Vf * np.cos(theta + beta),
-                    Vf * np.sin(theta + beta),
+    f_expl =vertcat(Vf * np.cos(theta ),
+                    Vf * np.sin(theta),
                     yaw_rate,
                     accel
                     )

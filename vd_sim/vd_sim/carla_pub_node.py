@@ -19,6 +19,7 @@ class CarlaRosPublisher(Node):
         # Retrieve the vehicle using role name
         self.role_name = VEHICLE_ROLE_NAME
         self.vehicle = self.get_vehicle_by_role_name()
+        self.last_yaw = 0
 
         if self.vehicle == None:
             raise RuntimeError(f"Vehicle with ID {self.role_name} not found!")
@@ -28,7 +29,7 @@ class CarlaRosPublisher(Node):
         self.waypoints_pub = self.create_publisher(Path, '/carla/ego_vehicle/waypoints', 10)
 
         # Timer for publishing at 20 Hz
-        self.create_timer(0.02, self.publish_data)  # 100 Hz
+        self.create_timer(self.T_pred, self.publish_data)  # 100 Hz
 
     def publish_data(self):
         """Publish odometry and trajectory data."""
@@ -87,8 +88,13 @@ class CarlaRosPublisher(Node):
                                  vehicle_velocity.z * forward_vector.z)
         #lateral_velocity = math.sqrt(vehicle_velocity.x**2 + vehicle_velocity.y**2 + vehicle_velocity.z**2 - longitudinal_velocity**2)
 
-        # Assigning longitudinal and lateral velocities to odometry message (optional fields)
+        # Assigning longitudinal velocities to odometry message (optional fields)
         odom_msg.twist.twist.linear.x = longitudinal_velocity
+        yaw_rate = (yaw - self.last_yaw ) / self.T_pred
+        odom_msg.twist.twist.angular.x = yaw_rate
+        self.last_yaw = yaw
+
+
         print("current_pose : ", vehicle_transform.location.x, " " ,vehicle_transform.location.y ," ", vehicle_transform.rotation.yaw)
         #odom_msg.twist.twist.linear.y = lateral_velocity
         self.odom_pub.publish(odom_msg)
@@ -114,7 +120,7 @@ class CarlaRosPublisher(Node):
             pose_stamped.pose.orientation.x = yaw#% 2 *math.pi
             pose_stamped.pose.orientation.y = 0.0
             pose_stamped.pose.orientation.z = 0.0
-            pose_stamped.pose.orientation.w = 15.0  # self.vehicle.get_speed_limit()
+            pose_stamped.pose.orientation.w = 1.0  # self.vehicle.get_speed_limit()
 
             pose_stamped.pose
             print("wavepoint :", wp.transform.location.x, " " ,wp.transform.location.y," ", wp.transform.rotation.yaw)         

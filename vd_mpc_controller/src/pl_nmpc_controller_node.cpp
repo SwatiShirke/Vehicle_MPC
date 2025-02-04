@@ -59,7 +59,7 @@ namespace nmpc_control_nodelet
     //set qos
     auto qos_profile_ = this->create_custom_qos();
     //punlsihers
-    pub_control_cmd_ = this->create_publisher<vd_msg::msg::VDControlCMD>("/mpc/control_cmd",qos_profile_);
+    pub_control_cmd_ = this->create_publisher<vd_msgs::msg::VDControlCMD>("/mpc/control_cmd",qos_profile_);
     pub_ref_traj_ = this->create_publisher<nav_msgs::msg::Path>("reference_path", 1);
     pub_pred_traj_ = this->create_publisher<nav_msgs::msg::Path>("predicted_path", 1);   
 
@@ -162,7 +162,7 @@ void NMPCControlNodelet::referenceCallback(const nav_msgs::msg::Path::SharedPtr 
       // steer_angle_in = std::atan(L / (R_curve + W / 2));
       // steer_angle_out = std::atan(L / (R_curve - W / 2));
       
-      reference_inputs.col(i) << 0, 0, 0;
+      reference_inputs.col(i) << 0, 0;
       iterator++;
     }
   }
@@ -175,7 +175,7 @@ void NMPCControlNodelet::referenceCallback(const nav_msgs::msg::Path::SharedPtr 
                                                                   filt_reference_msg->poses[0].pose.orientation.w).finished().replicate(1, kSamples);
     
     
-    reference_inputs = (Eigen::Matrix<double, kInputSize, 1>() << 0,0,0).finished().replicate(1, kSamples);
+    reference_inputs = (Eigen::Matrix<double, kInputSize, 1>() << 0,0).finished().replicate(1, kSamples);
      
     
     }
@@ -229,12 +229,10 @@ void NMPCControlNodelet::publishControl()
   Eigen::Matrix<double, kInputSize, 1> pred_input = controller_.getPredictedInput();
   vd_msgs::msg::VDControlCMD vd_control_msg;
   vd_control_msg.header.stamp = clock_.now();
-
-  //vd_control_ms.header.frame_id = frame_id_;
-  
+ 
   
   vd_control_msg.accel = pred_input(0);
-  vd_control_msg.yaw_rate = pred_input(1)  //40 degree steering angle 
+  vd_control_msg.yaw_rate = pred_input(1);  //40 degree steering angle 
     
   std::cout<< "pred_input" << pred_input << '\n';
   pub_control_cmd_->publish(vd_control_msg);
@@ -253,7 +251,7 @@ void NMPCControlNodelet::publishReference()
     pose.header.stamp = clock_.now();
     pose.header.frame_id = frame_id_;
     pose.pose.position.x = reference_states(0,i);
-    pose.pose.position.y = reference_states(1, i);
+    pose.pose.position.y = reference_states(1,i);
     pose.pose.position.z = 0;
 
     pose.pose.orientation.w = 1;

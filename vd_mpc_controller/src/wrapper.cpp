@@ -57,7 +57,7 @@ void NMPCWrapper::initStates()
 {
 Eigen::Matrix<double, kStateSize, 1> VD_state(Eigen::Matrix<double, kStateSize, 1>::Zero());
   //hover_state(6) = 1.0;
-  kVDInput_ = (Eigen::Matrix<real_t, kInputSize, 1>() << 0.0, 0.0, 0.0).finished();
+  kVDInput_ = (Eigen::Matrix<real_t, kInputSize, 1>() << 0.0, 0.0).finished();
 
   // initialize states x and xN and input u.
   acados_initial_state_ = VD_state.template cast<double>();
