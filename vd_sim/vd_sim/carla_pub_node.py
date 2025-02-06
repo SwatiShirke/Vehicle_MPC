@@ -5,7 +5,10 @@ from nav_msgs.msg import Odometry, Path
 from geometry_msgs.msg import PoseStamped, Quaternion
 import math
 from rclpy.clock import Clock
+import numpy as np
+from std_msgs.msg import Float32
 
+ref_vel =15.0
 class CarlaRosPublisher(Node):
     def __init__(self, VEHICLE_ROLE_NAME):
         super().__init__('carla_ros_publisher')
@@ -14,7 +17,7 @@ class CarlaRosPublisher(Node):
         self.client = carla.Client('localhost', 2000)
         self.client.set_timeout(10.0)
         self.world = self.client.get_world()
-        self.T_pred = 0.02
+        self.T_pred = 0.02 
         self.N = 10
         # Retrieve the vehicle using role name
         self.role_name = VEHICLE_ROLE_NAME
@@ -26,9 +29,12 @@ class CarlaRosPublisher(Node):
         #ROS 2 Publishers
         self.odom_pub = self.create_publisher(Odometry, '/carla/ego_vehicle/odometry', 10)
         self.waypoints_pub = self.create_publisher(Path, '/carla/ego_vehicle/waypoints', 10)
+        self.err_pub = self.create_publisher(Float32, '/norm_error', 1)
+        self.ref_waypoint = None
+        self.current_loc = None
 
         # Timer for publishing at 20 Hz
-        self.create_timer(0.02, self.publish_data)  # 100 Hz
+        self.create_timer(self.T_pred, self.publish_data)  # 100 Hz
 
     def publish_data(self):
         """Publish odometry and trajectory data."""
@@ -37,6 +43,8 @@ class CarlaRosPublisher(Node):
         # =======================
         self.publish_odometry()
 
+        #cal nd publish norm error 
+        self.cal_error()
         # =======================
         # Publish Trajectory
         # =======================
@@ -52,8 +60,10 @@ class CarlaRosPublisher(Node):
         return qx, qy, qz, qw
 
     def publish_odometry(self):
+        
         vehicle_transform = self.vehicle.get_transform()
         vehicle_velocity = self.vehicle.get_velocity()
+        self.current_loc = vehicle_transform
 
         odom_msg = Odometry()
         odom_msg.header.stamp = self.clock.now().to_msg()
@@ -66,12 +76,9 @@ class CarlaRosPublisher(Node):
         odom_msg.pose.pose.position.z = vehicle_transform.location.z
 
         # Orientation: Use Yaw, Pitch, Roll (in radians)
-        yaw = math.radians(vehicle_transform.rotation.yaw) #% 2 *math.pi
+        yaw = (math.radians(vehicle_transform.rotation.yaw) + 2*np.pi) % (4*np.pi) - 2*np.pi
         pitch = math.radians(vehicle_transform.rotation.pitch)
         roll = math.radians(vehicle_transform.rotation.roll)
-
-        #x,y,z,w = self.euler_to_quaternion(roll, pitch, yaw)
-
 
         # Optional: Add YPR as part of the covariance field
         # This is a hack if you want to include YPR without a custom message
@@ -85,13 +92,20 @@ class CarlaRosPublisher(Node):
         longitudinal_velocity = (vehicle_velocity.x * forward_vector.x +
                                  vehicle_velocity.y * forward_vector.y +
                                  vehicle_velocity.z * forward_vector.z)
-        #lateral_velocity = math.sqrt(vehicle_velocity.x**2 + vehicle_velocity.y**2 + vehicle_velocity.z**2 - longitudinal_velocity**2)
-
+        
         # Assigning longitudinal and lateral velocities to odometry message (optional fields)
         odom_msg.twist.twist.linear.x = longitudinal_velocity
-        print("current_pose : ", vehicle_transform.location.x, " " ,vehicle_transform.location.y ," ", vehicle_transform.rotation.yaw)
-        #odom_msg.twist.twist.linear.y = lateral_velocity
         self.odom_pub.publish(odom_msg)
+        
+    
+    def cal_error(self):
+        if self.ref_waypoint !=None and self.current_loc != None:
+            norm_error =  np.sqrt((self.ref_waypoint.location.x - self.current_loc.location.x)**2 + (self.ref_waypoint.location.y - self.current_loc.location.y)**2)
+            float_msg = Float32()
+            float_msg.data = norm_error
+            print("norm_error",norm_error)
+            self.err_pub.publish(float_msg)
+
 
     def publish_waypoints(self, N=10):       
         # Retrieve waypoints
@@ -102,7 +116,10 @@ class CarlaRosPublisher(Node):
         path_msg.header.frame_id = 'map'
 
         way_point_list = []
-        for wp in waypoints:
+        for i, wp in enumerate(waypoints):
+            if i ==0:
+                self.ref_waypoint = wp.transform
+
             pose_stamped = PoseStamped()
             pose_stamped.header = path_msg.header
             path_msg.header.stamp = self.clock.now().to_msg()
@@ -110,7 +127,7 @@ class CarlaRosPublisher(Node):
             pose_stamped.pose.position.y = wp.transform.location.y
             pose_stamped.pose.position.z = wp.transform.location.z
 
-            yaw = math.radians(wp.transform.rotation.yaw)
+            yaw = (math.radians(wp.transform.rotation.yaw) + 2*np.pi) % (4*np.pi) - 2*np.pi
             # pitch = math.radians(wp.transform.rotation.pitch)
             # roll = math.radians(wp.transform.rotation.roll)
             #x, y,z, w = self.euler_to_quaternion(roll, pitch, yaw)
@@ -119,10 +136,10 @@ class CarlaRosPublisher(Node):
             pose_stamped.pose.orientation.x = yaw#% 2 *math.pi
             pose_stamped.pose.orientation.y = 0.0
             pose_stamped.pose.orientation.z = 0.0
-            pose_stamped.pose.orientation.w = 15.0  # self.vehicle.get_speed_limit()
+            pose_stamped.pose.orientation.w = ref_vel  # self.vehicle.get_speed_limit()
 
             pose_stamped.pose
-            print("wavepoint :", wp.transform.location.x, " " ,wp.transform.location.y," ", wp.transform.rotation.yaw)         
+            #print("wavepoint :", wp.transform.location.x, " " ,wp.transform.location.y," ", wp.transform.rotation.yaw)         
             path_msg.poses.append(pose_stamped)  
         self.waypoints_pub.publish(path_msg)
 

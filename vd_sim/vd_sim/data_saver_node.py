@@ -10,6 +10,7 @@ import rosbag2_py
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
 import shutil
 import os
+from std_msgs.msg import Float32
 
 class BagWriterNode(Node):
     def __init__(self):
@@ -39,7 +40,9 @@ class BagWriterNode(Node):
         self.create_bag_topic('/carla/ego_vehicle/odometry', 'nav_msgs/msg/Odometry')
         self.create_bag_topic('/carla/ego_vehicle/vehicle_control_cmd', 'carla_msgs/msg/CarlaEgoVehicleControl')
         self.create_bag_topic('/carla/ego_vehicle/waypoints', 'nav_msgs/msg/Path')
+        self.create_bag_topic( '/norm_error', 'std_msgs/msgs/Float32')
 
+        
         # Subscriptions
         qos_profile = QoSProfile(
             reliability=QoSReliabilityPolicy.BEST_EFFORT,  # Best effort, similar to TCP no delay
@@ -49,6 +52,7 @@ class BagWriterNode(Node):
         self.create_subscription(Odometry, "/carla/ego_vehicle/odometry", self.odom_callback, qos_profile)
         self.create_subscription(CarlaEgoVehicleControl, "/carla/ego_vehicle/vehicle_control_cmd", self.control_input_callback, qos_profile)
         self.create_subscription(Path, "/carla/ego_vehicle/waypoints", self.desired_traj_callback, qos_profile)
+        self.create_subscription(Float32, "/norm_error", self.err_callback,1  )
 
     def create_bag_topic(self, topic_name, type_name):
         """Create a topic in the ROS bag."""
@@ -60,6 +64,11 @@ class BagWriterNode(Node):
             )
         )
         self.get_logger().info(f"Created topic: {topic_name}")
+
+    def err_callback(self, msg):
+        """Handle err messages."""
+        self.get_logger().info(f"Received err message")
+        self.write_to_bag("/norm_error", msg) 
 
     def odom_callback(self, msg):
         """Handle odometry messages."""

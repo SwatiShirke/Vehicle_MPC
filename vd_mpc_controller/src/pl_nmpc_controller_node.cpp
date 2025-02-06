@@ -145,7 +145,7 @@ void NMPCControlNodelet::referenceCallback(const nav_msgs::msg::Path::SharedPtr 
     for (int i=0; i < kSamples; i++)
     { 
       
-      std::cout<< " x " << iterator->pose.position.x << " y " << iterator->pose.position.y << " psi " << iterator->pose.orientation.x << '\n';
+      //std::cout<< " x " << iterator->pose.position.x << " y " << iterator->pose.position.y << " psi " << iterator->pose.orientation.x << '\n';
       
       // std::cout << "inside pl controller"<< '\n';
       // std::cout << iterator->position.x << iterator->position.y << iterator->position.z<< '\n';  
@@ -217,7 +217,7 @@ void NMPCControlNodelet::odomCallback(const nav_msgs::msg::Odometry::SharedPtr o
   
   this->vd_current_state = state;
   
-  std::cout << "state" <<  state << '\n';
+  //std::cout << "state" <<  state << '\n';
   // std::cout << state << '\n';
   controller_.setState(state);
 }
@@ -230,7 +230,7 @@ void NMPCControlNodelet::publishControl()
   //vd_control_ms.header.frame_id = frame_id_;
   if (pred_input(0) >= 0)
   {
-    vd_control_msg.throttle = pred_input(0);
+    vd_control_msg.throttle = pred_input(0) /8.5 ;
     vd_control_msg.steer = (pred_input(1) + pred_input(2))/ (2 * 0.7) ; //40 degree steering angle 
     vd_control_msg.brake = 0;
   }
@@ -238,9 +238,9 @@ void NMPCControlNodelet::publishControl()
   {
     vd_control_msg.throttle = 0;
     vd_control_msg.steer = (pred_input(1) + pred_input(2))/(2 * 0.7);
-    vd_control_msg.brake = -1 * pred_input(0);
+    vd_control_msg.brake = -1 * pred_input(0) / 8.5;
   }
-  std::cout<< "pred_input" << pred_input << '\n';
+  //std::cout<< "pred_input" << pred_input << '\n';
   pub_control_cmd_->publish(vd_control_msg);
 
 }
@@ -279,7 +279,7 @@ void NMPCControlNodelet::publishPrediction()
   geometry_msgs::msg::PoseStamped pose;
   for (int i=0; i < kSamples; i++)
   { 
-    std::cout << " pred x " << reference_states(0,i) << " pred_y " << reference_states(1,i) << " pred_yaw " << reference_states(2,i) << " pred_vel " << reference_states(3,i) << '\n';
+    //std::cout << " pred x " << reference_states(0,i) << " pred_y " << reference_states(1,i) << " pred_yaw " << reference_states(2,i) << " pred_vel " << reference_states(3,i) << '\n';
     pose.header.stamp = clock_.now();
     pose.header.frame_id = frame_id_;
     pose.pose.position.x = reference_states(0,i);
