@@ -69,7 +69,7 @@ def acados_controller(N, Tf, lf, lr):
     ocp = AcadosOcp()
     # set model    
     min_accel = -8.5
-    max_accel = +3
+    max_accel = +2.5
     min_str_angle_in= -0.7
     max_str_angle_in = 0.7
     min_str_angle_out = -0.7
@@ -95,10 +95,10 @@ def acados_controller(N, Tf, lf, lr):
     unscale = 1
     #cost matricesq
     # x, y, yaw, pitch, roll, vel
-    Q_mat = unscale * ca.vertcat(100, 100,   100, 100)
+    Q_mat = unscale * ca.vertcat(100, 100,   1000, 100)
     R_mat = unscale * ca.vertcat( 1e-8, 1e-8, 1e-8)
-    Q_emat =  unscale * ca.vertcat(1000, 1000,   1000, 1000) 
-    control_rate_weight = ca.vertcat(1000, 10000, 10000)
+    Q_emat =  unscale * ca.vertcat(1000, 1000,   10000, 1000) 
+    control_rate_weight = ca.vertcat(10000, 10000, 10000)
     state_rate_weight = ca.vertcat(0, 0, 100, 0)
     prev_in = ca.vertcat(0,0,0)
     prev_state = ca.vertcat(0,0,0,0)

@@ -5,6 +5,7 @@ from nav_msgs.msg import Odometry, Path
 from geometry_msgs.msg import PoseStamped, Quaternion
 import math
 from rclpy.clock import Clock
+
 import numpy as np
 from std_msgs.msg import Float32
 
@@ -12,9 +13,12 @@ ref_vel =15.0
 class CarlaRosPublisher(Node):
     def __init__(self, VEHICLE_ROLE_NAME):
         super().__init__('carla_ros_publisher')
-        self.clock = Clock()
+        self.clock = Clock() #wall clock
+        self.sim_clock = self.get_clock() #sim clock
         # Connect to CARLA
         self.client = carla.Client('localhost', 2000)
+         # Get the current ROS2 time
+        
         self.client.set_timeout(10.0)
         self.world = self.client.get_world()
         self.T_pred = 0.02 
@@ -66,7 +70,9 @@ class CarlaRosPublisher(Node):
         self.current_loc = vehicle_transform
 
         odom_msg = Odometry()
-        odom_msg.header.stamp = self.clock.now().to_msg()
+        current_time = self.sim_clock.now()
+        #print(current_time) 
+        odom_msg.header.stamp = current_time.to_msg()
         #odom_msg.header.stamp = self.get_clock().now().to_msg()
         odom_msg.header.frame_id = 'map'
 
@@ -103,7 +109,7 @@ class CarlaRosPublisher(Node):
             norm_error =  np.sqrt((self.ref_waypoint.location.x - self.current_loc.location.x)**2 + (self.ref_waypoint.location.y - self.current_loc.location.y)**2)
             float_msg = Float32()
             float_msg.data = norm_error
-            print("norm_error",norm_error)
+            #print("norm_error",norm_error)
             self.err_pub.publish(float_msg)
 
 
@@ -112,7 +118,8 @@ class CarlaRosPublisher(Node):
         waypoints = self.get_time_spanned_waypoints()
         #Create PoseArray for waypoints
         path_msg = Path()
-        path_msg.header.stamp = self.clock.now().to_msg()
+        current_time = self.sim_clock.now()        
+        path_msg.header.stamp = current_time.to_msg()
         path_msg.header.frame_id = 'map'
 
         way_point_list = []
@@ -122,7 +129,8 @@ class CarlaRosPublisher(Node):
 
             pose_stamped = PoseStamped()
             pose_stamped.header = path_msg.header
-            path_msg.header.stamp = self.clock.now().to_msg()
+            current_time = self.sim_clock.now()        
+            pose_stamped.header.stamp = current_time.to_msg()
             pose_stamped.pose.position.x = wp.transform.location.x
             pose_stamped.pose.position.y = wp.transform.location.y
             pose_stamped.pose.position.z = wp.transform.location.z

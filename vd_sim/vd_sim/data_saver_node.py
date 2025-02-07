@@ -76,6 +76,7 @@ class BagWriterNode(Node):
         self.write_to_bag("/carla/ego_vehicle/odometry", msg)
 
     def control_input_callback(self, msg):
+        msg.steer = msg.steer * 0.7 # steer is between -1 to +1 between -0.7 to +0.7 radians
         """Handle control input messages."""
         self.get_logger().info(f"Received FMNCommand message")
         self.write_to_bag("/carla/ego_vehicle/vehicle_control_cmd", msg)
