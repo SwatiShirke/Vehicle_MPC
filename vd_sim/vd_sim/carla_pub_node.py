@@ -28,8 +28,7 @@ class CarlaRosPublisher(Node):
         self.vehicle = self.get_vehicle_by_role_name()
 
         if self.vehicle == None:
-            raise RuntimeError(f"Vehicle with ID {self.role_name} not found!")
-        
+            raise RuntimeError(f"Vehicle with ID {self.role_name} not found!")        
         #ROS 2 Publishers
         self.odom_pub = self.create_publisher(Odometry, '/carla/ego_vehicle/odometry', 10)
         self.waypoints_pub = self.create_publisher(Path, '/carla/ego_vehicle/waypoints', 10)

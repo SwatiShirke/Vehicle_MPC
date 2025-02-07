@@ -24,7 +24,7 @@ def read_vehicle_bag_data(bag_path):
 
     while reader.has_next():
         topic_name, serialized_msg, t = reader.read_next()
-        print(topic_name, " ", t)
+        #print(topic_name, " ", t)
         
         # Convert nanoseconds to seconds
         time_sec = t * 1e-9

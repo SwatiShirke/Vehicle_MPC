@@ -240,7 +240,7 @@ void NMPCControlNodelet::publishControl()
     vd_control_msg.steer = (pred_input(1) + pred_input(2))/(2 * 0.7);
     vd_control_msg.brake = -1 * pred_input(0) / 8.5;
   }
-  //std::cout<< "pred_input" << pred_input << '\n';
+  std::cout<< "pred_input" << pred_input << '\n';
   pub_control_cmd_->publish(vd_control_msg);
 
 }
