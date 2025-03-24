@@ -1,0 +1,22 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/swati/acados/my_code/ackerman_carla_ROS2_WS/install/vd_traj/lib/python3.10/site-packages",
+        "/home/swati/acados/my_code/ackerman_carla_ROS2_WS/install/vd_sim/lib/python3.10/site-packages",
+        "/home/swati/acados/my_code/ackerman_carla_ROS2_WS/install/vd_pid_controller/lib/python3.10/site-packages",
+        "/home/swati/acados/my_code/ackerman_carla_ROS2_WS/install/vd_msgs/lib/python3.10/site-packages",
+        "/home/swati/acados/my_code/ackerman_carla_ROS2_WS/install/carla_msgs/lib/python3.10/site-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages",
+        "/PythonAPI/carla/dist/carla-0.9.14-py3.10-linux-x86_64.egg"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/swati/acados/my_code/ackerman_carla_ROS2_WS/install/vd_traj/lib/python3.10/site-packages",
+        "/home/swati/acados/my_code/ackerman_carla_ROS2_WS/install/vd_sim/lib/python3.10/site-packages",
+        "/home/swati/acados/my_code/ackerman_carla_ROS2_WS/install/vd_pid_controller/lib/python3.10/site-packages",
+        "/home/swati/acados/my_code/ackerman_carla_ROS2_WS/install/vd_msgs/lib/python3.10/site-packages",
+        "/home/swati/acados/my_code/ackerman_carla_ROS2_WS/install/carla_msgs/lib/python3.10/site-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages",
+        "/PythonAPI/carla/dist/carla-0.9.14-py3.10-linux-x86_64.egg"
+    ]
+}

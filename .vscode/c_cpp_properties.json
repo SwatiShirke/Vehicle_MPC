@@ -1,0 +1,25 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/swati/acados/my_code/ackerman_carla_ROS2_WS/install/vd_msgs/include/**",
+        "/home/swati/acados/my_code/ackerman_carla_ROS2_WS/install/vd_mpc_controller/include/**",
+        "/home/swati/acados/my_code/ackerman_carla_ROS2_WS/install/carla_msgs/include/**",
+        "/opt/ros/humble/include/**",
+        "/home/swati/acados/my_code/ackerman_carla_ROS2_WS/src/Vehicle_MPC/vd_mpc_controller/include/**",
+        "/home/swati/acados/my_code/ackerman_carla_ROS2_WS/src/Vehicle_MPC/vd_msgs/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}
