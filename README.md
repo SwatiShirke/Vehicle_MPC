@@ -165,7 +165,7 @@ Testing results are as follows:
 ## PID Tuning
 | **PID Tuning - Graph 1** | **PID Tuning - Graph 2** |
 |--------------------------|--------------------------|
-| ![PID Tuning 1](Results/MATLAB_Results/Vel_graph.jpg) | ![PID Tuning 2](Results/MATLAB_Results/PID_tunning2/Vx.jpg) |
+| ![PID Tuning 1](Results/MATLAB_Results/PID_tunning/Vel_graph.jpg) | ![PID Tuning 2](Results/MATLAB_Results/PID_tunning2/Vx.jpg) |
 
 ---
 Feel free to contribute or suggest improvements! 😊
