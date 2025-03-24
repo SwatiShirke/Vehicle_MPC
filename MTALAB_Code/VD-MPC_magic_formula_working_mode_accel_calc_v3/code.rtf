@@ -1,0 +1,147 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fnil\fcharset0 Calibri;}}
+{\*\generator Riched20 10.0.22621}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\f0\fs22\lang9 def vehicle_dynamics(t, x, vx, delta_L_func, delta_R_func, mass, massf, massr, massf_unspr, massr_unspr, Iz, a, b, h_spr, Kphi, Kphif, Kphir, Kphi_dot, I_phi, track_width_front, track_width_rear, g, h_RC_front, h_RC_rear, wr_roll_f, wr_roll_r, Rollsteer_front, Rollsteer_rear, Compsteer_front, Compsteer_rear, h_uspr_f, h_uspr_r,Roll_camber_front,Roll_camber_rear,Stat_toe_front,Stat_toe_rear,Stat_Camber_front,Stat_Camber_rear,Alsteer_front,Alsteer_rear,Camber_compl_front,Camber_compl_rear):\par
+    psi, r, phi, dphi, vy, X, Y = x\par
+    \par
+    # Steering input parameters\par
+    delta_L = delta_L_func(t)\par
+    delta_R = delta_R_func(t)\par
+    \par
+    # Calculate static vertical forces\par
+    Fz_static_front = mass * g * b / (a + b) / 2\par
+    Fz_static_rear = mass * g * a / (a + b) / 2\par
+    \par
+    ay = vx * r  # Current lateral acceleration\par
+    \par
+    delta_Fz_fL = (massf * h_RC_front / track_width_front * ay + Kphif / (Kphif + Kphir) * (massf * (h_spr - h_RC_front) + massr * (h_spr - h_RC_rear)) / track_width_front * ay) + (massf_unspr * h_uspr_f* ay / track_width_front)\par
+    delta_Fz_fR = -delta_Fz_fL\par
+    delta_Fz_rL = (massr * h_RC_rear / track_width_rear * ay + Kphir / (Kphif + Kphir) * (massf * (h_spr - h_RC_front) + massr * (h_spr - h_RC_rear)) / track_width_rear * ay) + (massr_unspr * h_uspr_r * ay / track_width_rear)\par
+    delta_Fz_rR = -delta_Fz_rL\par
+    \par
+    #wheel travel in mm in roll\par
+    WT_FL = -delta_Fz_fL/wr_roll_f  \par
+    WT_FR = -delta_Fz_fR/wr_roll_f\par
+    WT_RL = -delta_Fz_rL/wr_roll_r\par
+    WT_RR = -delta_Fz_rR/wr_roll_r\par
+    \par
+    #Roll_steer component\par
+    roll_toe_fl=np.deg2rad(Rollsteer_front * WT_FL)\par
+    roll_toe_fr=np.deg2rad(Rollsteer_front * WT_FR)\par
+    roll_toe_rl=np.deg2rad(Rollsteer_rear * WT_RL)\par
+    roll_toe_rr=np.deg2rad(Rollsteer_rear * WT_RR)\par
+    \par
+    #Camber calculation\par
+    CamberfL = np.deg2rad( Stat_Camber_front + Roll_camber_front * WT_FL ) - phi\par
+    CamberfR = np.deg2rad( Stat_Camber_front + Roll_camber_front * WT_FR ) + phi\par
+    CamberrL = np.deg2rad( Stat_Camber_rear + Roll_camber_rear * WT_RL ) - phi\par
+    CamberrR = np.deg2rad( Stat_Camber_rear + Roll_camber_rear * WT_RR ) + phi\par
+    \par
+    #Compliance component\par
+    \par
+    # Calculate dynamic vertical forces\par
+    Fz_fL = Fz_static_front - delta_Fz_fL\par
+    Fz_fR = Fz_static_front - delta_Fz_fR\par
+    Fz_rL = Fz_static_rear - delta_Fz_rL\par
+    Fz_rR = Fz_static_rear - delta_Fz_rR\par
+\par
+    # Calculate slip angles\par
+    alpha_fL = np.arctan((vy + a * r ) / (vx - (track_width_front / 2 ) * r)) - (delta_L - roll_toe_fl - np.deg2rad(Stat_toe_front))\par
+    alpha_fR = np.arctan((vy + a * r ) / (vx + (track_width_front / 2 ) * r)) - (delta_R + roll_toe_fr + np.deg2rad(Stat_toe_front))\par
+    alpha_rL = np.arctan((vy - b * r) / (vx - (track_width_rear / 2 )* r)) - ( 0 - roll_toe_rl - np.deg2rad(Stat_toe_rear))\par
+    alpha_rR = np.arctan((vy - b * r) / (vx + (track_width_rear / 2 )* r)) - ( 0 + roll_toe_rr + np.deg2rad(Stat_toe_rear))\par
+\par
+    # Calculate lateral forces\par
+    Fy_fL, Mz_fL = lateral_force_front_tires(alpha_fL, Fz_fL , -CamberfL )\par
+    Fy_fR, Mz_fR = lateral_force_front_tires(alpha_fR, Fz_fR, CamberfR )\par
+    Fy_rL, Mz_rL = lateral_force_rear_tires(alpha_rL, Fz_rL, -CamberrL )\par
+    Fy_rR, Mz_rR = lateral_force_rear_tires(alpha_rR, Fz_rR, CamberrR )\par
+\par
+    F_yfL = Fy_fL * np.cos(delta_L)\par
+    F_yfR = Fy_fR * np.cos(delta_R)\par
+    F_yf = F_yfL + F_yfR\par
+    F_yr = Fy_rL + Fy_rR\par
+    M_z = a * (F_yfL + F_yfR) - b * (Fy_rL + Fy_rR) + (track_width_front / 2) * (Fy_fR * np.sin(delta_R) - Fy_fL * np.sin(delta_L))\par
+\par
+    ay = (F_yf + F_yr) / mass\par
+    \par
+    \par
+    #recalc\par
+    \par
+    delta_Fz_fL = (massf * h_RC_front / track_width_front * ay + Kphif / (Kphif + Kphir) * (massf * (h_spr - h_RC_front) + massr * (h_spr - h_RC_rear)) / track_width_front * ay) + (massf_unspr * h_uspr_f* ay / track_width_front)\par
+    delta_Fz_fR = -delta_Fz_fL\par
+    delta_Fz_rL = (massr * h_RC_rear / track_width_rear * ay + Kphir / (Kphif + Kphir) * (massf * (h_spr - h_RC_front) + massr * (h_spr - h_RC_rear)) / track_width_rear * ay) + (massr_unspr * h_uspr_r * ay / track_width_rear)\par
+    delta_Fz_rR = -delta_Fz_rL\par
+    \par
+    #wheel travel in mm in roll\par
+    WT_FL = -delta_Fz_fL/wr_roll_f  \par
+    WT_FR = -delta_Fz_fR/wr_roll_f\par
+    WT_RL = -delta_Fz_rL/wr_roll_r\par
+    WT_RR = -delta_Fz_rR/wr_roll_r\par
+    \par
+    #Roll_steer component\par
+    roll_toe_fl=np.deg2rad(Rollsteer_front * WT_FL)\par
+    roll_toe_fr=np.deg2rad(Rollsteer_front * WT_FR)\par
+    roll_toe_rl=np.deg2rad(Rollsteer_rear * WT_RL)\par
+    roll_toe_rr=np.deg2rad(Rollsteer_rear * WT_RR)\par
+    \par
+    #Camber calculation\par
+    CamberfL = np.deg2rad( Stat_Camber_front + Roll_camber_front * WT_FL - Camber_compl_front*Fy_fL ) - phi\par
+    CamberfR = np.deg2rad( Stat_Camber_front + Roll_camber_front * WT_FR + Camber_compl_front*Fy_fR ) + phi\par
+    CamberrL = np.deg2rad( Stat_Camber_rear + Roll_camber_rear * WT_RL - Camber_compl_rear*Fy_rL ) - phi\par
+    CamberrR = np.deg2rad( Stat_Camber_rear + Roll_camber_rear * WT_RR + Camber_compl_rear*Fy_rR  ) + phi\par
+    \par
+    #Compliance component\par
+    comp_toe_fl=np.deg2rad(Compsteer_front * F_yfL)\par
+    comp_toe_fr=np.deg2rad(Compsteer_front * F_yfR) \par
+    comp_toe_rl=np.deg2rad(Compsteer_rear * Fy_rL)\par
+    comp_toe_rr=np.deg2rad(Compsteer_rear * Fy_rR)\par
+    \par
+    #alignmoment-steer\par
+    Al_toe_fl=np.deg2rad(Alsteer_front * Mz_fL)\par
+    Al_toe_fr=np.deg2rad(Alsteer_front * Mz_fR)   \par
+    Al_toe_rl=np.deg2rad(Alsteer_rear * Mz_rL)\par
+    Al_toe_rr=np.deg2rad(Alsteer_rear * Mz_rR)   \par
+    \par
+    # Calculate dynamic vertical forces\par
+    Fz_fL = Fz_static_front - delta_Fz_fL\par
+    Fz_fR = Fz_static_front - delta_Fz_fR\par
+    Fz_rL = Fz_static_rear - delta_Fz_rL\par
+    Fz_rR = Fz_static_rear - delta_Fz_rR\par
+    \par
+    Toe_front_left = ( delta_L - roll_toe_fl + comp_toe_fl - np.deg2rad(Stat_toe_front) - Al_toe_fl)\par
+    Toe_front_right = ( delta_R + roll_toe_fr + comp_toe_fr + np.deg2rad(Stat_toe_front) - Al_toe_fr)\par
+    Toe_rear_left = ( 0 - roll_toe_rl + comp_toe_rl - np.deg2rad(Stat_toe_rear) - Al_toe_rl )\par
+    Toe_rear_right = ( 0 + roll_toe_rr + comp_toe_rr + np.deg2rad(Stat_toe_rear) - Al_toe_rr )\par
+    \par
+    # Calculate slip angles\par
+    alpha_fL = np.arctan((vy + a * r ) / (vx - (track_width_front / 2 ) * r))- Toe_front_left \par
+    alpha_fR = np.arctan((vy + a * r ) / (vx + (track_width_front / 2 ) * r))- Toe_front_right\par
+    alpha_rL = np.arctan((vy - b * r) / (vx - (track_width_rear / 2 )* r)) -  Toe_rear_left \par
+    alpha_rR = np.arctan((vy - b * r) / (vx + (track_width_rear / 2 )* r)) -  Toe_rear_right    \par
+\par
+    # Calculate lateral forces\par
+    Fy_fL, Mz_fL = lateral_force_front_tires(alpha_fL, Fz_fL , -CamberfL )\par
+    Fy_fR, Mz_fR = lateral_force_front_tires(alpha_fR, Fz_fR, CamberfR )\par
+    Fy_rL, Mz_rL = lateral_force_rear_tires(alpha_rL, Fz_rL, -CamberrL )\par
+    Fy_rR, Mz_rR = lateral_force_rear_tires(alpha_rR, Fz_rR, CamberrR )\par
+\par
+    F_yfL = Fy_fL * np.cos(delta_L)\par
+    F_yfR = Fy_fR * np.cos(delta_R)\par
+    F_yf = F_yfL + F_yfR\par
+    F_yr = Fy_rL + Fy_rR\par
+    M_z = a * (F_yfL + F_yfR) - b * (Fy_rL + Fy_rR) + (track_width_front / 2) * (Fy_fR * np.sin(delta_R) - Fy_fL * np.sin(delta_L))\par
+\par
+    ay = (F_yf + F_yr) / mass\par
+\par
+    # State equations\par
+    psi_dot = r\par
+    r_dot = M_z / Iz\par
+    phi_dot = dphi\par
+    dphi_dot = (1 / I_phi) * (-(massf * (h_spr - h_RC_front) + massr * (h_spr - h_RC_rear)) * g * np.sin(phi) - Kphi * phi - Kphi_dot * dphi + (massf * (h_spr - h_RC_front) + massr * (h_spr - h_RC_rear)) * ay)\par
+    vy_dot = ay -r * vx \par
+    X_dot = vx * np.cos(psi) - vy * np.sin(psi)\par
+    Y_dot = vx * np.sin(psi) + vy * np.cos(psi)\par
+\par
+    return [psi_dot, r_dot, phi_dot, dphi_dot, vy_dot, X_dot, Y_dot]\par
+}
+ 
