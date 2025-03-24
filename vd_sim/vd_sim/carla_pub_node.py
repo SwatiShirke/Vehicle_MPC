@@ -9,7 +9,7 @@ from rclpy.clock import Clock
 import numpy as np
 from std_msgs.msg import Float32
 
-ref_vel =15.0
+ref_vel = 15.0
 class CarlaRosPublisher(Node):
     def __init__(self, VEHICLE_ROLE_NAME):
         super().__init__('carla_ros_publisher')
@@ -35,6 +35,7 @@ class CarlaRosPublisher(Node):
         self.err_pub = self.create_publisher(Float32, '/norm_error', 1)
         self.ref_waypoint = None
         self.current_loc = None
+        self.goal_loc = carla.Location(x=225, y=-50, z=1)
 
         # Timer for publishing at 20 Hz
         self.create_timer(self.T_pred, self.publish_data)  # 100 Hz
@@ -159,7 +160,55 @@ class CarlaRosPublisher(Node):
         qz = math.cos(roll / 2) * math.cos(pitch / 2) * math.sin(yaw / 2) - math.sin(roll / 2) * math.sin(pitch / 2) * math.cos(yaw / 2)
         qw = math.cos(roll / 2) * math.cos(pitch / 2) * math.cos(yaw / 2) + math.sin(roll / 2) * math.sin(pitch / 2) * math.sin(yaw / 2)
         return qx, qy, qz, qw
+
+    def get_time_spanned_waypoints(self, goal_point, threshold=2.0):
+        """
+        Generate waypoints spaced at consistent time intervals. 
+        If any waypoint is close to the goal point, all subsequent waypoints are set to the goal.
     
+        Args:
+            goal_point (carla.Location): The target goal location.
+            threshold (float): Distance threshold (meters) to consider a waypoint close to the goal.
+    
+        Returns:
+            List of time-spanned waypoints.
+        """
+        map = self.vehicle.get_world().get_map()
+        current_waypoint = map.get_waypoint(self.vehicle.get_transform().location)
+        waypoints = []
+        
+        goal_reached = False  # Flag to check if goal is close
+    
+        for _ in range(int(self.N)):
+            if goal_reached:
+                waypoints.append(map.get_waypoint(goal_point))  # Set remaining waypoints to goal
+                continue
+            
+            velocity = self.vehicle.get_velocity()
+            forward_vector = self.vehicle.get_transform().get_forward_vector()
+            longitudinal_speed = (velocity.x * forward_vector.x +
+                                  velocity.y * forward_vector.y +
+                                  velocity.z * forward_vector.z)
+    
+            # Calculate the distance to the next waypoint
+            distance = max(longitudinal_speed * self.T_pred, 0.1)  # Ensure non-zero distance
+            
+            next_waypoints = current_waypoint.next(distance)
+    
+            if next_waypoints:
+                current_waypoint = next_waypoints[0]  # Use the first waypoint in the list
+                
+                # Check if the waypoint is close to the goal
+                if current_waypoint.transform.location.distance(goal_point) <= threshold:
+                    goal_reached = True
+                    waypoints.append(map.get_waypoint(goal_point))  # First waypoint set to goal
+                else:
+                    waypoints.append(current_waypoint)
+            else:
+                break  # No more waypoints available (end of the road)
+            
+        return waypoints
+
     def get_time_spanned_waypoints(self):
         """
         Generate waypoints spaced at consistent time intervals.
@@ -187,7 +236,7 @@ class CarlaRosPublisher(Node):
             distance = max(longitudinal_speed * self.T_pred, 0.1 ) # Ensure non-zero distance
             #print("dist ", distance)
             next_waypoints = current_waypoint.next(distance)
-    
+        
             if next_waypoints:
                 current_waypoint = next_waypoints[0]  # Use the first waypoint in the list
                 waypoints.append(current_waypoint)

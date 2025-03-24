@@ -76,7 +76,7 @@ def acados_controller(N, Tf, lf, lr):
     max_str_angle_out = 0.7
     vel_min = 0
     vel_max = 30
-    steer_rate = 0.1
+    steer_rate = 0.01   #2.866242038 deg /sec
     yaw_rate = 0.1
 
     model = ackerman_model(lf, lr)
@@ -97,8 +97,8 @@ def acados_controller(N, Tf, lf, lr):
     # x, y, yaw, pitch, roll, vel
     Q_mat = unscale * ca.vertcat(500, 500,   500, 500)
     R_mat = unscale * ca.vertcat( 1e-8, 1e-8, 1e-8)
-    Q_emat =  unscale * ca.vertcat(5000, 5000,  5000, 1000) 
-    control_rate_weight = ca.vertcat(5000, 5000, 5000)
+    Q_emat =  unscale * ca.vertcat(1000, 1000,  1000, 1000) 
+    control_rate_weight = ca.vertcat(1000, 1000, 1000)
     state_rate_weight = ca.vertcat(0, 0, 100, 0)
     prev_in = ca.vertcat(0,0,0)
     prev_state = ca.vertcat(0,0,0,0)
