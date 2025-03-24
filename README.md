@@ -18,7 +18,7 @@ This repository implements trajectory tracking for an Ackerman steering system u
 The project demonstrates:
 - Designing an OCP problem for MPC controller for an Ackerman steering model.
 - Using the Acados library for efficient optimization.
-- Testing the controller on multiple trajectories (e.g., straight, sinusoidal paths).
+- Integration with Carla Unreal Engine for reat-time testing. 
 
 ---
 
@@ -27,8 +27,8 @@ The project demonstrates:
 - Trajectory tracking for various reference paths.
 - Visualization of:
   - 2D trajectory plots (vehicle vs. reference path).
-  - Control inputs (steering angle and velocity).
-- Easily adaptable for different scenarios.
+  - Control inputs (steering angle and throttle).
+- 
 
 ---
 
@@ -83,20 +83,20 @@ accelerator input.
 ---
 
 ### Control Input
-| 2D Trajectory Plot | Control Input Plot |
+|Throttle Input| Steering Input |
 |---------------------|--------------------|
 | ![Throttle Input](Results/plots_10mps/throttle_command.png) | ![Steering Input](Results/plots_10mps/steering_command.png) |
 
 ---
 
 ### Position
-| 2D Trajectory Plot | Control Input Plot |
+| X Position | Y Position |
 |---------------------|--------------------|
 | ![X Position](Results/plots_10mps/x_position_over_time.png) | ![Y Position](Results/plots_10mps/y_position_over_time.png) |
 
 ### Position
-| 2D Trajectory Plot | Control Input Plot |
-|---------------------|--------------------|
+| Heading Angle
+|---------------------
 | ![Heading Angle](Results/plots_10mps/yaw_angle_over_time.png) 
 
 ---
